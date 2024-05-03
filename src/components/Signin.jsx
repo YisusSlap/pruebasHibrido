@@ -3,17 +3,22 @@ import { StyleSheet, StatusBar, View, TextInput, Alert, TouchableOpacity, Toucha
 import StyleText from "./StyleText.jsx";
 import Constants from 'expo-constants'
 import { authenticate } from './AuthService';
+import {useState} from "react";
+import { useNavigate } from 'react-router-native';
+import WelcomeScreen from './WelcomeScreen';
 
 const Signin = () =>{
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async () => {
         const isAuthenticated = await authenticate(email, password);
         if (isAuthenticated) {
             // Navegar a la pantalla de bienvenida
-            console.log('Autenticación exitosa');
+            navigate('/welcome')
+            {/*console.log('Autenticación exitosa');*/}
         } else {
             Alert.alert('Error', 'Credenciales inválidas');
         }
@@ -27,19 +32,37 @@ const Signin = () =>{
                 source={require('./logoAlma.png')}
                 style={styles.logo}
             />
-      
-            <TextInput placeholder='atoleytacos@email.com' style={styles.textInputs}/>
-            <TextInput placeholder='contraseña' style={styles.textInputs}/>
 
-            <View >
-      
-                <TouchableOpacity style={styles.boton} onPress={() => Alert.alert('Holiwis')} >
+            {/* <TextInput placeholder='atoleytacos@email.com' style={styles.textInputs}/>
+            <TextInput placeholder='contraseña' style={styles.textInputs}/>
+            */}
+
+            <TextInput
+                placeholder='Correo electrónico'
+                style={styles.textInputs}
+                value={email}
+                onChangeText={setEmail}
+            />
+            <TextInput
+                placeholder='Contraseña'
+                style={styles.textInputs}
+                secureTextEntry={true}
+                value={password}
+                onChangeText={setPassword}
+            />
+
+            {/*<View >*/}
+                <TouchableOpacity style={styles.boton} onPress={handleLogin}>
+            {/*<TouchableOpacity style={styles.boton} onPress={() => Alert.alert('Holiwis')} >*/}
                     <StyleText blanco big>Iniciar Sesion</StyleText>
                 </TouchableOpacity>
-      
-            </View>
+
+                {/*</View>*/}
 
             <StyleText >¿No tienes una cuenta?</StyleText>
+
+
+
             <TouchableWithoutFeedback>
                 <StyleText rojo>Registrate</StyleText>
             </TouchableWithoutFeedback>

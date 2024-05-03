@@ -1,9 +1,9 @@
-import React from "react";
+//import React from "react";
 
 import {  View,  } from 'react-native';
+import React, { useEffect } from "react";
 import Signin from "./Signin";
-import { Route, Routes } from "react-router-native";
-import { View } from 'react-native';
+import {Route, Routes, useNavigate} from "react-router-native";
 import WelcomeScreen from './WelcomeScreen';
 import { isAuthenticated } from './AuthService';
 

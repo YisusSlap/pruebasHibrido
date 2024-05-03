@@ -1,7 +1,7 @@
 // AuthService.js
 import { AsyncStorage } from 'react-native';
 
-// Reemplaza estas credenciales con las tuyas
+
 const validEmail = 'prueba@example.com';
 const validPassword = '123';
 
