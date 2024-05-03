@@ -3,7 +3,7 @@ import { View, Image, StyleSheet } from 'react-native';
 import StyleText from './StyleText.jsx';
 
 const WelcomeScreen = () => {
-    return (
+    return ( //cambio
         <View style={styles.container}>
             <Image source={require('./logoAlma.png')} style={styles.logo} />
             <StyleText style={styles.title}>Bienvenido</StyleText>
