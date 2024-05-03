@@ -2,8 +2,24 @@ import React from "react";
 import { StyleSheet, StatusBar, View, TextInput, Alert, TouchableOpacity, TouchableWithoutFeedback, Image } from 'react-native';
 import StyleText from "./StyleText.jsx";
 import Constants from 'expo-constants'
+import { authenticate } from './AuthService';
 
 const Signin = () =>{
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = async () => {
+        const isAuthenticated = await authenticate(email, password);
+        if (isAuthenticated) {
+            // Navegar a la pantalla de bienvenida
+            console.log('Autenticación exitosa');
+        } else {
+            Alert.alert('Error', 'Credenciales inválidas');
+        }
+    };
+    
+
     return (
         <View style={styles.container}>
       
