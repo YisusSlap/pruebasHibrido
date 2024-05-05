@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import StyleText from './StyleText.jsx';
+import Constants from 'expo-constants'
 
 const WelcomeScreen = () => {
     return ( //cambio2 nuevo
@@ -19,7 +20,8 @@ const WelcomeScreen = () => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        marginTop: Constants.statusBarHeight,
+        flexGrow: 1,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#fff',
