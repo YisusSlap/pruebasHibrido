@@ -4,7 +4,7 @@ import StyleText from "./StyleText.jsx";
 import Constants from 'expo-constants'
 import { authenticate } from './AuthService';
 import {useState} from "react";
-import { useNavigate } from 'react-router-native';
+import { useNavigate, Navigate } from 'react-router-native';
 import WelcomeScreen from './WelcomeScreen';
 
 const Signin = () =>{
@@ -13,8 +13,8 @@ const Signin = () =>{
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = async () => {
-        const isAuthenticated = await authenticate(email, password);
+    const handleLogin =  () => {
+        const isAuthenticated =  authenticate(email, password);
         if (isAuthenticated) {
             // Navegar a la pantalla de bienvenida
             navigate('/welcome')
@@ -22,6 +22,10 @@ const Signin = () =>{
         } else {
             Alert.alert('Error', 'Credenciales inválidas');
         }
+    };
+
+    const registro = () =>{
+        navigate('/signup')
     };
     
 
@@ -54,7 +58,7 @@ const Signin = () =>{
             {/*<View >*/}
                 <TouchableOpacity style={styles.boton} onPress={handleLogin}>
             {/*<TouchableOpacity style={styles.boton} onPress={() => Alert.alert('Holiwis')} >*/}
-                    <StyleText blanco big>Iniciar Sesion</StyleText>
+                    <StyleText fontWeight={'bold'} color={'primary'}>Iniciar Sesion</StyleText>
                 </TouchableOpacity>
 
                 {/*</View>*/}
@@ -63,11 +67,11 @@ const Signin = () =>{
 
 
 
-            <TouchableWithoutFeedback>
-                <StyleText rojo>Registrate</StyleText>
-            </TouchableWithoutFeedback>
+            <TouchableOpacity onPress={registro}>
+                <StyleText color={'secondary'}>Registrate</StyleText>
+            </TouchableOpacity>
             <StyleText>from</StyleText>
-            <StyleText negro={true} >Atrakito</StyleText>
+            <StyleText>Atrakito</StyleText>
             <StatusBar style="auto"/>
     </View>
     )

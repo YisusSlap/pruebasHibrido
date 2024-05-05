@@ -1,5 +1,7 @@
 // AuthService.js
-import { AsyncStorage } from 'react-native';
+// AuthService.js
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 const validEmail = 'prueba@example.com';

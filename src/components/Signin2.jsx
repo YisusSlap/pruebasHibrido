@@ -4,20 +4,27 @@ import StyleText from "./StyleText.jsx";
 import Constants from 'expo-constants'
 import { useState } from "react";
 import { useNavigation } from '@react-navigation/native';
+import { authenticate } from './AuthService';
 
-const Signup = () => {
+const Signin2 = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [name, setName] = useState('');
     const navigation = useNavigation();
 
     const handleLogin = () => {
-        navigation.navigate("WelcomeScreen");
+        const isAuthenticated =  authenticate(email, password);
+        if (isAuthenticated) {
+            // Navegar a la pantalla de bienvenida
+            navigation.navigate('MainStack');
+            {/*console.log('Autenticación exitosa');*/}
+        } else {
+            Alert.alert('Error', 'Credenciales inválidas');
+        }
     };
 
-    const goToSignin = () => {
-        navigation.navigate('Signin');
+    const goToSignup = () => {
+        navigation.navigate('Signup');
     };
 
     return (
@@ -34,13 +41,6 @@ const Signup = () => {
                 onChangeText={setEmail}
             />
             <TextInput
-                placeholder='Nombre'
-                style={styles.textInputs}
-                secureTextEntry={true}
-                value={name}
-                onChangeText={setName}
-            />
-            <TextInput
                 placeholder='Contraseña'
                 style={styles.textInputs}
                 secureTextEntry={true}
@@ -52,10 +52,10 @@ const Signup = () => {
                 <StyleText fontWeight={'bold'} color={'primary'}>Iniciar Sesión</StyleText>
             </TouchableOpacity>
 
-            <StyleText >¿Tienes una cuenta?</StyleText>
+            <StyleText >¿No tienes una cuenta?</StyleText>
 
-            <TouchableOpacity onPress={goToSignin}>
-                <StyleText color={'secondary'}>Inicia sesion</StyleText>
+            <TouchableOpacity onPress={goToSignup}>
+                <StyleText color={'secondary'}>Crea una nueva</StyleText>
             </TouchableOpacity>
 
             
@@ -107,4 +107,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default Signup;
+export default Signin2;

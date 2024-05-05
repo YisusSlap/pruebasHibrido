@@ -1,35 +1,50 @@
-//import React from "react";
+import { View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import React from "react";
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+// pantallas
+import Signin from "./Signin.jsx";
+import Signin2 from "./Signin2.jsx";
+import Signup from "./Signup.jsx";
+import WelcomeScreen from './WelcomeScreen.jsx';
+import FoodListScreen from './FoodListScreen.jsx';
 
-import {  View,  } from 'react-native';
-import React, { useEffect } from "react";
-import Signin from "./Signin";
-import {Route, Routes, useNavigate} from "react-router-native";
-import WelcomeScreen from './WelcomeScreen';
-import { isAuthenticated } from './AuthService';
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
-const Main = () =>{
-
-    const navigate = useNavigate();
-
-    React.useEffect(() => {
-        const checkAuthentication = async () => {
-            const isAuth = await isAuthenticated();
-            if (isAuth) {
-                navigate('/welcome');
-            }
-        };
-        checkAuthentication();
-    }, [navigate]);
-
+function SigninStack() {
   return (
-    <View>
-      <Routes>
-        <Route path='/' element={<Signin/>} />
-        <Route path='/signin' element={<Signin/>} />
-          <Route path="/welcome" element={<WelcomeScreen />} />
-      </Routes>
-    </View>
-  )
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Signin" component={Signin2} />
+      <Stack.Screen name="Signup" component={Signup} />
+    </Stack.Navigator>
+  );
 }
 
-export default Main
+function MainStack() {
+  return (
+    <Tab.Navigator
+      initialRouteName='Signin'>
+      <Tab.Screen 
+      name="WelcomScreen" 
+      component={WelcomeScreen}
+      
+      />
+      <Tab.Screen name="FoodListScreen" component={FoodListScreen}/>
+    </Tab.Navigator>
+  );
+}
+
+export default function Navigation() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="SigninStack" component={SigninStack} />
+        <Stack.Screen name="MainStack" component={MainStack} />
+      </Stack.Navigator>
+      <StatusBar style="auto" />
+    </NavigationContainer>
+  );
+}
