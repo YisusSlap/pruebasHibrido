@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import ManualEntryScreen from './ManualEntryScreen';
 import BarcodeScannerScreen from './BarcodeScannerScreen';
+import Constants from 'expo-constants'
 
 const AddFoodScreen = () => {
     const [showManualEntry, setShowManualEntry] = useState(false);
@@ -35,9 +36,10 @@ const AddFoodScreen = () => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        marginTop: Constants.statusBarHeight,
     },
     option: {
         marginVertical: 16,
@@ -46,6 +48,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'gray',
         borderRadius: 8,
+        width: '80%',
+        height: '40%',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     optionText: {
         fontSize: 18,
