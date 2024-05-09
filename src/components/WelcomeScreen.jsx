@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, Modal, Image, Button } from 'react-native';
+import { View, StyleSheet, Dimensions, Modal, Image, Button, TouchableOpacity } from 'react-native';
 import Constants from 'expo-constants';
 import StyleText from './StyleText';
+import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons desde expo-vector-icons
 
 const { width } = Dimensions.get('window');
 const CELL_WIDTH = (width - 130) / 3; // El ancho de la celda se ajusta restando 40 píxeles (10 píxeles de espacio a cada lado de la celda) y dividiendo por 3
@@ -43,15 +44,19 @@ const WelcomeScreen = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
+            {/* Botón de cierre */}
+            <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+              <Ionicons name="close" size={24} color="black" />
+            </TouchableOpacity>
             <Image source={require('./logoAlma.png')} style={styles.logo} />
             <StyleText style={styles.title}>Bienvenido</StyleText>
             <View style={styles.descriptionContainer}>
               <StyleText>AlmaZen es una aplicación diseñada para ayudarte a diseñar un menú adaptado a tu alacena</StyleText>
             </View>
+            {/* Aumento del tamaño de la imagen */}
             <View style={styles.imageContainer}>
               <Image source={require('./chef.png')} style={styles.welcomeImage} />
             </View>
-            <Button title="Cerrar" onPress={closeModal} />
           </View>
         </View>
       </Modal>
@@ -85,12 +90,17 @@ const styles = StyleSheet.create({
     width: '90%',
     height: '80%',
   },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
   logo: {
     width: 200,
     height: 160,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32, // Aumento del tamaño del texto
     fontWeight: 'bold',
     marginTop: 10,
   },
@@ -98,8 +108,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   welcomeImage: {
-    width: 100,
-    height: 100,
+    width: 200, // Ajuste del tamaño de la imagen
+    height: 200, // Ajuste del tamaño de la imagen
   },
   row: {
     flexDirection: 'row',
