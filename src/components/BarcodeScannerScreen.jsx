@@ -1,44 +1,44 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { RNCamera } from 'react-native-camera';
-import { handleAddFood } from './FoodListScreen';
-
-    //la biblioteca rnc es para acceder a la camara
-    //pongan en consula npm install react-native camera
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { BarCodeScanner } from 'expo-camera';
 
 const BarcodeScannerScreen = () => {
+    const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
-    const [barcodeValue, setBarcodeValue] = useState('');
 
-    const handleBarCodeScanned = ({ data }) => {
+    useEffect(() => {
+        (async () => {
+            const { status } = await BarCodeScanner.requestPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
+
+    const handleBarCodeScanned = ({ type, data }) => {
         setScanned(true);
-        setBarcodeValue(data);
-        //escaneo (poner lodica despues)
-        console.log(`Código de barras escaneado: ${data}`);
+        alert(`Código de barras escaneado: ${data}`);
     };
 
-    const handleResetScanner = () => {
-        setScanned(false);
-        setBarcodeValue('');
-    };
+    if (hasPermission === null) {
+        return <Text>Solicitando permiso para acceder a la cámara...</Text>;
+    }
+    if (hasPermission === false) {
+        return <Text>No se ha concedido permiso para acceder a la cámara</Text>;
+    }
 
     return (
         <View style={styles.container}>
-            <RNCamera
-                style={styles.cameraView}
-                onBarCodeRead={scanned ? undefined : handleBarCodeScanned}
-            >
-                {scanned && (
-                    <View style={styles.scanResultContainer}>
-                        <Text style={styles.scanResultText}>
-                            Código de barras escaneado: {barcodeValue}
-                        </Text>
-                        <TouchableOpacity style={styles.resetButton} onPress={handleResetScanner}>
-                            <Text style={styles.resetButtonText}>Escanear de nuevo</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-            </RNCamera>
+            <BarCodeScanner
+                onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+                style={StyleSheet.absoluteFillObject}
+            />
+            {scanned && (
+                <TouchableOpacity
+                    onPress={() => setScanned(false)}
+                    style={styles.button}
+                >
+                    <Text style={styles.buttonText}>Escanear nuevamente</Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 };
@@ -46,29 +46,18 @@ const BarcodeScannerScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    cameraView: {
-        flex: 1,
-        justifyContent: 'flex-end',
+    button: {
+        marginTop: 20,
+        padding: 10,
+        backgroundColor: '#800000',
+        borderRadius: 5,
     },
-    scanResultContainer: {
-        padding: 16,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    },
-    scanResultText: {
-        color: '#fff',
-        fontSize: 18,
-        marginBottom: 8,
-    },
-    resetButton: {
-        backgroundColor: '#007bff',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 4,
-    },
-    resetButtonText: {
-        color: '#fff',
+    buttonText: {
+        color: 'white',
         fontSize: 16,
     },
 });

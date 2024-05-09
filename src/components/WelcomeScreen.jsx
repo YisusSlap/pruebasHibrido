@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#800000', // Fondo de la ventana rojo
+    backgroundColor: '#fce4cc', // Fondo de la ventana rojo
     marginTop: Constants.statusBarHeight
   },
   modalContainer: {
