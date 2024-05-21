@@ -51,7 +51,7 @@ const WelcomeScreen = () => {
             <Image source={require('./logoAlma.png')} style={styles.logo} />
             <StyleText style={styles.title}>Bienvenido</StyleText>
             <View style={styles.descriptionContainer}>
-              <StyleText>AlmaZen es una aplicación diseñada para ayudarte a diseñar un menú adaptado a tu alacena</StyleText>
+              <StyleText>AlmaZen es una aplicación diseñada para ayudarte a diseñar un menú adaptado a tu alacena.</StyleText>
             </View>
             {/* Aumento del tamaño de la imagen */}
             <View style={styles.imageContainer}>
