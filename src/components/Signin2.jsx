@@ -1,10 +1,13 @@
 import React from "react";
-import { StyleSheet, StatusBar, View, TextInput, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Alert, View, TextInput, TouchableOpacity, Image } from 'react-native';
 import StyleText from "./StyleText.jsx";
 import Constants from 'expo-constants'
 import { useState } from "react";
 import { useNavigation } from '@react-navigation/native';
-import { authenticate } from './AuthService';
+
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import { firebaseConfig } from "./Firebase-config.jsx";
 
 const Signin2 = () => {
 
@@ -12,16 +15,23 @@ const Signin2 = () => {
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
 
-    const handleLogin = () => {
-        const isAuthenticated =  authenticate(email, password);
-        if (isAuthenticated) {
-            // Navegar a la pantalla de bienvenida
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const handleSignin = () =>{
+        signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            console.log('sign in')
+            const user = userCredential.user;
+            console.log(user)
             navigation.navigate('MainStack');
-            {/*console.log('Autenticación exitosa');*/}
-        } else {
-            Alert.alert('Error', 'Credenciales inválidas');
-        }
-    };
+        })
+        .catch(error => {
+            console.log(error)
+            Alert.alert(error.massage)
+        })
+    }
+
 
     const goToSignup = () => {
         navigation.navigate('Signup');
@@ -38,17 +48,17 @@ const Signin2 = () => {
                 placeholder='Correo electrónico'
                 style={styles.textInputs}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => setEmail(text)}
             />
             <TextInput
                 placeholder='Contraseña'
                 style={styles.textInputs}
                 secureTextEntry={true}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text)=> setPassword(text)}
             />
 
-            <TouchableOpacity style={styles.boton} onPress={handleLogin}>
+            <TouchableOpacity style={styles.boton} onPress={handleSignin}>
                 <StyleText fontWeight={'bold'} color={'primary'}>Iniciar Sesión</StyleText>
             </TouchableOpacity>
 
