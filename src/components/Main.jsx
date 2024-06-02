@@ -33,8 +33,20 @@ function AddFoodStack() {
     <Stack.Navigator
       initialRouteName="AddFoodScreen">
       <Stack.Screen name="AddFoodScreen" component={AddFoodScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="ManualEntryScreen" component={ManualEntryScreen} />
-      <Stack.Screen name="BarcodeScannerScreen" component={BarcodeScannerScreen} />
+      <Stack.Screen name="ManualEntryScreen" 
+      component={ManualEntryScreen} 
+      options={{
+        headerShown: true,
+        title: "Ingresar Manualmente"
+      }}
+      />
+      <Stack.Screen name="BarcodeScannerScreen" 
+      component={BarcodeScannerScreen}
+      options={{
+        headerShown: true,
+        title: "Scanner"
+      }}
+      />
     </Stack.Navigator>
   );
 }
@@ -87,7 +99,21 @@ export default function Navigation() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="SigninStack" component={SigninStack} />
-        <Stack.Screen name="MainStack" component={MainStack} />
+        <Stack.Screen 
+          name="MainStack" 
+          component={MainStack} 
+          options={({ route }) => {
+            const routeName = route.state
+              ? route.state.routes[route.state.index].name
+              : 'WelcomeScreen';
+
+            if (routeName === 'ManualEntryScreen' || routeName === 'BarcodeScannerScreen') {
+              return { tabBarVisible: false };
+            }
+
+            return { tabBarVisible: true };
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

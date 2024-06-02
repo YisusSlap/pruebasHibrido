@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TextInput, Text } from 'react-native';
-
+import { MaterialCommunityIcons, FontAwesome, SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 
 const ManualEntryScreen = () => {
     const [foodName, setFoodName] = useState('');
@@ -14,10 +14,10 @@ const ManualEntryScreen = () => {
 
     return (
         <View style={styles.container}>
-            {/* Texto "Imagen del producto" */}
-            <Text style={styles.imageText}>Imagen del producto</Text>
-            {/* Contenedor para la imagen */}
-            <View style={styles.imageContainer}></View>
+            {/* Contenedor para el ícono */}
+            <View style={styles.iconContainer}>
+                <Ionicons name="image-outline" size={100} color="black" />
+            </View>
             {/* Espacio vertical */}
             <View style={styles.separator}></View>
             {/* Contenedor para los text inputs */}
@@ -71,11 +71,11 @@ const ManualEntryScreen = () => {
                     onChangeText={setNutritionInformation}
                 />
             </View>
-            {/* Recuadros negros */}
-            <View style={styles.blackBoxContainer}>
-                <View style={styles.blackBox}></View>
-                <View style={styles.blackBox}></View>
-                <View style={styles.blackBox}></View>
+            {/* Iconos */}
+            <View style={styles.bottomIconContainer}>
+                <MaterialCommunityIcons name="fridge-outline" size={50} color="black" />
+                <FontAwesome name="snowflake-o" size={50} color="black" />
+                <SimpleLineIcons name="drawer" size={50} color="black" />
             </View>
         </View>
     );
@@ -87,23 +87,21 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff', // Fondo blanco
-        
     },
-    imageText: {
-        fontSize: 18,
-        marginBottom: 10,
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
     },
-    imageContainer: {
-        width: '20%',
-        height: 70,
-        backgroundColor: 'black',
+    iconContainer: {
+        width: '100%',
+        alignItems: 'center',
     },
     separator: {
         height: 20, // Espacio vertical
     },
     inputContainer: {
         width: '80%', // Ancho del inputContainer
-        // Ocupa la mitad de la altura disponible
         paddingHorizontal: 20,
         paddingVertical: 10, // Espaciado vertical
         backgroundColor: '#f2f2f2',
@@ -116,23 +114,12 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         backgroundColor: 'transparent',
     },
-    blackBoxContainer: {
-        flexDirection: 'row', // Muestra los recuadros en una fila
-        justifyContent: 'space-between', // Espacio entre los recuadros
-        width: '80%', // Ancho del inputContainer
+    bottomIconContainer: {
+        flexDirection: 'row', // Muestra los íconos en una fila horizontal
+        justifyContent: 'space-between', // Espacio entre los íconos
+        width: '70%', // Ancho del contenedor de íconos
         marginVertical: 10, // Espacio vertical
-    },
-    blackBox: {
-        width: '30%', // Ancho del recuadro negro
-        height: 70, // Altura del recuadro negro
-        backgroundColor: 'black',
     },
 });
 
 export default ManualEntryScreen;
-
-
-
-
-
-

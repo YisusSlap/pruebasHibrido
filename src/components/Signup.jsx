@@ -74,7 +74,7 @@ const Signup = () => {
             />
 
             <TouchableOpacity style={styles.boton} onPress={handleCreateAccount}>
-                <StyleText fontWeight={'bold'} color={'primary'}>Iniciar Sesión</StyleText>
+                <StyleText fontWeight={'bold'} color={'primary'}>Registrarte</StyleText>
             </TouchableOpacity>
 
             <StyleText >¿Tienes una cuenta?</StyleText>
