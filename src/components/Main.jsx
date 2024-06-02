@@ -4,13 +4,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 
 // Pantallas
-import Signin2 from "./Signin2.jsx";
-import Signup from "./Signup.jsx";
-import WelcomeScreen from './WelcomeScreen.jsx';
-import FoodListScreen from './FoodListScreen.jsx';
-import AddFoodScreen from './AddFoodScreen.jsx';
-import ManualEntryScreen from './ManualEntryScreen.jsx';
-import BarcodeScannerScreen from './BarcodeScannerScreen.jsx';
+import Signin2 from "./Signin2";
+import Signup from "./Signup";
+import WelcomeScreen from './WelcomeScreen';
+import FoodListScreen from './FoodListScreen';
+import AddFoodScreen from './AddFoodScreen';
+import ManualEntryScreen from './ManualEntryScreen';
+import BarcodeScannerScreen from './BarcodeScannerScreen';
 
 // Iconos
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -28,6 +28,17 @@ function SigninStack() {
   );
 }
 
+function AddFoodStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="AddFoodScreen">
+      <Stack.Screen name="AddFoodScreen" component={AddFoodScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="ManualEntryScreen" component={ManualEntryScreen} />
+      <Stack.Screen name="BarcodeScannerScreen" component={BarcodeScannerScreen} />
+    </Stack.Navigator>
+  );
+}
+
 function MainStack() {
   return (
     <Tab.Navigator
@@ -35,7 +46,7 @@ function MainStack() {
         tabBarActiveTintColor: '#800000'
       }}>
       <Tab.Screen 
-        name="WelcomScreen" 
+        name="WelcomeScreen" 
         component={WelcomeScreen}
         options={{
           tabBarIcon: ({color, size}) => (
@@ -46,7 +57,7 @@ function MainStack() {
         }}
       />
       <Tab.Screen 
-        name="AddFoodScreen" 
+        name="AddFoodStack" 
         component={AddFoodStack}
         options={{
           tabBarIcon: ({color, size}) => (
@@ -71,24 +82,12 @@ function MainStack() {
   );
 }
 
-function AddFoodStack() {
-  return (
-    <Stack.Navigator
-      initialRouteName="AddFoodScreen">
-      <Stack.Screen name="AddFoodScreen" component={AddFoodScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="ManualEntryScreen" component={ManualEntryScreen} />
-      <Stack.Screen name="BarcodeScannerScreen" component={BarcodeScannerScreen} />
-    </Stack.Navigator>
-  );
-}
-
 export default function Navigation() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="SigninStack" component={SigninStack} />
         <Stack.Screen name="MainStack" component={MainStack} />
-        
       </Stack.Navigator>
     </NavigationContainer>
   );

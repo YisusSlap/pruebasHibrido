@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { BarCodeScanner } from 'expo-camera';
+import { BarCodeScanner } from 'expo-barcode-scanner';
 
 const BarcodeScannerScreen = () => {
     const [hasPermission, setHasPermission] = useState(null);
