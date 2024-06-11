@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Text } from 'react-native';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Alert } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome, SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 
 const ManualEntryScreen = () => {
@@ -12,8 +12,44 @@ const ManualEntryScreen = () => {
     const [information, setInformation] = useState('');
     const [nutritionInformation, setNutritionInformation] = useState('');
 
+    const [showSavedMessage, setShowSavedMessage] = useState(false);
+
+    //para el popup
+    const handleSave = () => {
+        Alert.alert(
+            "Guardar Cambios",
+            `¿Desea guardar los siguientes cambios?\n\n` +
+            `Nombre del alimento: ${foodName}\n` +
+            `Marca: ${brand}\n` +
+            `Categoría: ${category}\n` +
+            `Tamaño: ${size}\n` +
+            `Descripción: ${description}\n` +
+            `Ingredientes: ${ingredients}\n` +
+            `Información: ${information}\n` +
+            `Información nutrimental: ${nutritionInformation}`,
+            [
+                {
+                    text: "Cancelar",
+                    style: "cancel"
+                },
+                {
+                    text: "Aceptar",
+                    onPress: () => {
+                        setShowSavedMessage(true);
+                        setTimeout(() => setShowSavedMessage(false), 3000); // para ocultar el msj despues de 3 segundos
+                    }
+                }
+            ]
+        );
+    };
+
+
     return (
         <View style={styles.container}>
+            {/* Botón de palomita */}
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Ionicons name="checkmark" size={30} color="black"/>
+            </TouchableOpacity>
             {/* Contenedor para el ícono */}
             <View style={styles.iconContainer}>
                 <Ionicons name="image-outline" size={100} color="black" />
@@ -77,6 +113,12 @@ const ManualEntryScreen = () => {
                 <FontAwesome name="snowflake-o" size={50} color="black" />
                 <SimpleLineIcons name="drawer" size={50} color="black" />
             </View>
+             {/* Mensaje de guardado - va con el popup*/}
+             {showSavedMessage && (
+                <View style={styles.savedMessageContainer}>
+                    <Text style={styles.savedMessage}>Producto guardado</Text>
+                </View>
+            )}
         </View>
     );
 };
@@ -88,10 +130,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#fff', // Fondo blanco
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
+    saveButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
     },
     iconContainer: {
         width: '100%',
@@ -121,5 +163,6 @@ const styles = StyleSheet.create({
         marginVertical: 10, // Espacio vertical
     },
 });
+
 
 export default ManualEntryScreen;
