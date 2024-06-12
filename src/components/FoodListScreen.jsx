@@ -1,10 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, TextInput, TouchableOpacity } from 'react-native';
 import Constants from 'expo-constants';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { appFirebase } from './Firebase-config';
 
 const FoodListScreen = () => {
     const [foodList, setFoodList] = useState([]);
     const [selectedMenu, setSelectedMenu] = useState('Todo');
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const auth = getAuth(appFirebase);
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUserId(user.uid);
+            } else {
+                setUserId(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        if (selectedMenu === 'Todo' && userId) {
+            fetchFoodData();
+        }
+    }, [selectedMenu, userId]);
+
+    const fetchFoodData = async () => {
+        try {
+            const db = getFirestore();
+            const q = query(collection(db, 'productos'), where('userId', '==', userId));
+            const snapshot = await getDocs(q);
+            const foods = snapshot.docs.map(doc => doc.data().productName);
+            setFoodList(foods);
+        } catch (error) {
+            console.error('Error fetching food data:', error);
+        }
+    };
 
     const handleAddFood = (food) => {
         setFoodList([...foodList, food]);
@@ -13,14 +48,14 @@ const FoodListScreen = () => {
     const renderMenuItem = ({ item }) => (
         <TouchableOpacity
             style={[styles.menuItem, item === selectedMenu && styles.selectedMenuItem]}
-            onPress={() => setSelectedMenu(item)}>
+            onPress={() => setSelectedMenu(item === selectedMenu ? 'Todo' : item)}>
             <Text style={styles.menuText}>{item}</Text>
         </TouchableOpacity>
     );
 
     const renderItem = ({ item }) => (
-        <View style={styles.foodItem}>
-            <Text style={styles.foodName}>{item.name}</Text>
+        <View style={styles.foodItem} key={item}>
+            <Text style={styles.foodName}>{item}</Text>
         </View>
     );
 
@@ -45,7 +80,7 @@ const FoodListScreen = () => {
             <FlatList
                 data={foodList}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item}
             />
         </View>
     );
@@ -97,4 +132,3 @@ const styles = StyleSheet.create({
 });
 
 export default FoodListScreen;
-

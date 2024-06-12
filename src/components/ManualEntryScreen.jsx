@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Text, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome, SimpleLineIcons, Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import * as Permissions from 'expo-permissions';
+import { appFirebase } from './Firebase-config';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, addDoc, collection } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+const db = getFirestore(appFirebase)
+const storage = getStorage(appFirebase)
 
 const ManualEntryScreen = () => {
     const [foodName, setFoodName] = useState('');
@@ -11,11 +20,71 @@ const ManualEntryScreen = () => {
     const [ingredients, setIngredients] = useState('');
     const [information, setInformation] = useState('');
     const [nutritionInformation, setNutritionInformation] = useState('');
+    const [image, setImage] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [lugar, setLugar] = useState('afuera');
+    
 
     const [showSavedMessage, setShowSavedMessage] = useState(false);
 
-    //para el popup
+    useEffect(() => {
+        (async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Lo siento, necesitamos permisos de cámara para que esto funcione!');
+            }
+        })();
+    }, []);
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [3, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+        }
+    };
+
+    const uploadImage = async (uri) => {
+        //
+        const archivoI = uri
+        const refArchivo = ref(storage, `images/${Date.now()}`)
+        await uploadBytes(refArchivo, archivoI)
+        return await getDownloadURL(refArchivo)
+
+    };
+
+    const saveDataToFirestore = async (imageUrl, userId) => {
+        
+        try {
+            
+            const info = {
+                productName: foodName,
+                marca: brand,
+                categoria: category,
+                tamanio: size,
+                descripcion: description,
+                imgredientes: ingredients,
+                informacion: information,
+                infoNutricional: nutritionInformation,
+                foto: imageUrl,
+                sitio: lugar,
+                userId: userId
+            }
+            await addDoc(collection(db, 'productos'),{
+                ...info
+            })
+        } catch {
+            console.error(error)
+        }
+    };
+
     const handleSave = () => {
+        console.log(lugar)
         Alert.alert(
             "Guardar Cambios",
             `¿Desea guardar los siguientes cambios?\n\n` +
@@ -34,29 +103,41 @@ const ManualEntryScreen = () => {
                 },
                 {
                     text: "Aceptar",
-                    onPress: () => {
-                        setShowSavedMessage(true);
-                        setTimeout(() => setShowSavedMessage(false), 3000); // para ocultar el msj despues de 3 segundos
+                    onPress: async () => {
+                        setLoading(true);
+                        try {
+                            const auth = getAuth(appFirebase);
+                            const userId = auth.currentUser ? auth.currentUser.uid : null;
+                            let imageUrl = null;
+                            if (image) {
+                                imageUrl = await uploadImage(image);
+                            }
+                            await saveDataToFirestore(imageUrl, userId);
+                            setShowSavedMessage(true);
+                            setTimeout(() => setShowSavedMessage(false), 3000); // para ocultar el msj despues de 3 segundos
+                        } catch (error) {
+                            console.error("Error al guardar los datos: ", error);
+                        }
+                        setLoading(false);
                     }
                 }
             ]
         );
     };
 
-
     return (
         <View style={styles.container}>
-            {/* Botón de palomita */}
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <Ionicons name="checkmark" size={30} color="black"/>
             </TouchableOpacity>
-            {/* Contenedor para el ícono */}
-            <View style={styles.iconContainer}>
-                <Ionicons name="image-outline" size={100} color="black" />
-            </View>
-            {/* Espacio vertical */}
+            <TouchableOpacity onPress={pickImage} style={styles.iconContainer}>
+                {image ? (
+                    <Image source={{ uri: image }} style={styles.image} />
+                ) : (
+                    <Ionicons name="image-outline" size={100} color="black" />
+                )}
+            </TouchableOpacity>
             <View style={styles.separator}></View>
-            {/* Contenedor para los text inputs */}
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
@@ -107,16 +188,35 @@ const ManualEntryScreen = () => {
                     onChangeText={setNutritionInformation}
                 />
             </View>
-            {/* Iconos */}
             <View style={styles.bottomIconContainer}>
-                <MaterialCommunityIcons name="fridge-outline" size={50} color="black" />
-                <FontAwesome name="snowflake-o" size={50} color="black" />
-                <SimpleLineIcons name="drawer" size={50} color="black" />
+    <MaterialCommunityIcons
+        name="fridge-outline"
+        size={50}
+        color="black"
+        onPress={() => setLugar('refrigerador')}
+    />
+    <FontAwesome
+        name="snowflake-o"
+        size={50}
+        color="black"
+        onPress={() => setLugar('nevera')}
+    />
+    <SimpleLineIcons
+        name="drawer"
+        size={50}
+        color="black"
+        onPress={() => setLugar('cajon')}
+                />
+                
             </View>
-             {/* Mensaje de guardado - va con el popup*/}
-             {showSavedMessage && (
+            {showSavedMessage && (
                 <View style={styles.savedMessageContainer}>
                     <Text style={styles.savedMessage}>Producto guardado</Text>
+                </View>
+            )}
+            {loading && (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#0000ff" />
                 </View>
             )}
         </View>
@@ -128,7 +228,12 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff', // Fondo blanco
+        backgroundColor: '#fff',
+    },
+    image: {
+        width: 100,
+        height: 100,
+        borderRadius: 10,
     },
     saveButton: {
         position: 'absolute',
@@ -140,12 +245,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     separator: {
-        height: 20, // Espacio vertical
+        height: 20,
     },
     inputContainer: {
-        width: '80%', // Ancho del inputContainer
+        width: '80%',
         paddingHorizontal: 20,
-        paddingVertical: 10, // Espaciado vertical
+        paddingVertical: 10,
         backgroundColor: '#f2f2f2',
         borderRadius: 10,
     },
@@ -157,12 +262,27 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     bottomIconContainer: {
-        flexDirection: 'row', // Muestra los íconos en una fila horizontal
-        justifyContent: 'space-between', // Espacio entre los íconos
-        width: '70%', // Ancho del contenedor de íconos
-        marginVertical: 10, // Espacio vertical
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '70%',
+        marginVertical: 10,
+    },
+    savedMessageContainer: {
+        position: 'absolute',
+        bottom: 10,
+        backgroundColor: 'green',
+        padding: 10,
+        borderRadius: 5,
+    },
+    savedMessage: {
+        color: 'white',
+    },
+    loadingContainer: {
+        ...StyleSheet.absoluteFill,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
-
 
 export default ManualEntryScreen;

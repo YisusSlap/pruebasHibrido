@@ -1,4 +1,6 @@
-export const firebaseConfig = {
+import { initializeApp } from "firebase/app";
+
+const firebaseConfig = {
   apiKey: "AIzaSyDsA_tjStcu4SJCuJKy73H-VX17SZn_go0",
   authDomain: "almazen-2a054.firebaseapp.com",
   projectId: "almazen-2a054",
@@ -6,3 +8,7 @@ export const firebaseConfig = {
   messagingSenderId: "265776855812",
   appId: "1:265776855812:web:297471304c42b874c56e51"
 };
+
+const appFirebase = initializeApp(firebaseConfig);
+
+export {firebaseConfig, appFirebase};
