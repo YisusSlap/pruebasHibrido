@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TextInput, Text, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome, SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import * as Permissions from 'expo-permissions';
 import { appFirebase } from './Firebase-config';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-const db = getFirestore(appFirebase)
-const storage = getStorage(appFirebase)
+
+const db = getFirestore(appFirebase);
+const storage = getStorage(appFirebase);
 
 const ManualEntryScreen = () => {
     const [foodName, setFoodName] = useState('');
@@ -23,7 +23,6 @@ const ManualEntryScreen = () => {
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [lugar, setLugar] = useState('afuera');
-    
 
     const [showSavedMessage, setShowSavedMessage] = useState(false);
 
@@ -50,18 +49,28 @@ const ManualEntryScreen = () => {
     };
 
     const uploadImage = async (uri) => {
-        //
-        const archivoI = uri
-        const refArchivo = ref(storage, `images/${Date.now()}`)
-        await uploadBytes(refArchivo, archivoI)
-        return await getDownloadURL(refArchivo)
+        try {
+            // Fetch the image from the given URI
+            const response = await fetch(uri);
+            // Convert the image response to a Blob
+            const blob = await response.blob();
 
+            // Create a reference to the storage location
+            const refArchivo = ref(storage, `images/${Date.now()}.jpg`);
+
+            // Upload the blob to Firebase Storage
+            await uploadBytes(refArchivo, blob);
+
+            // Get the download URL
+            return await getDownloadURL(refArchivo);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw error;
+        }
     };
 
     const saveDataToFirestore = async (imageUrl, userId) => {
-        
         try {
-            
             const info = {
                 productName: foodName,
                 marca: brand,
@@ -73,18 +82,15 @@ const ManualEntryScreen = () => {
                 infoNutricional: nutritionInformation,
                 foto: imageUrl,
                 sitio: lugar,
-                userId: userId
-            }
-            await addDoc(collection(db, 'productos'),{
-                ...info
-            })
-        } catch {
-            console.error(error)
+                userId: userId,
+            };
+            await addDoc(collection(db, 'productos'), { ...info });
+        } catch (error) {
+            console.error('Error saving data to Firestore:', error);
         }
     };
 
     const handleSave = () => {
-        console.log(lugar)
         Alert.alert(
             "Guardar Cambios",
             `¿Desea guardar los siguientes cambios?\n\n` +
@@ -99,7 +105,7 @@ const ManualEntryScreen = () => {
             [
                 {
                     text: "Cancelar",
-                    style: "cancel"
+                    style: "cancel",
                 },
                 {
                     text: "Aceptar",
@@ -114,13 +120,13 @@ const ManualEntryScreen = () => {
                             }
                             await saveDataToFirestore(imageUrl, userId);
                             setShowSavedMessage(true);
-                            setTimeout(() => setShowSavedMessage(false), 3000); // para ocultar el msj despues de 3 segundos
+                            setTimeout(() => setShowSavedMessage(false), 3000); // para ocultar el mensaje después de 3 segundos
                         } catch (error) {
                             console.error("Error al guardar los datos: ", error);
                         }
                         setLoading(false);
-                    }
-                }
+                    },
+                },
             ]
         );
     };
@@ -128,7 +134,7 @@ const ManualEntryScreen = () => {
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Ionicons name="checkmark" size={30} color="black"/>
+                <Ionicons name="checkmark" size={30} color="black" />
             </TouchableOpacity>
             <TouchableOpacity onPress={pickImage} style={styles.iconContainer}>
                 {image ? (
@@ -189,25 +195,24 @@ const ManualEntryScreen = () => {
                 />
             </View>
             <View style={styles.bottomIconContainer}>
-    <MaterialCommunityIcons
-        name="fridge-outline"
-        size={50}
-        color="black"
-        onPress={() => setLugar('refrigerador')}
-    />
-    <FontAwesome
-        name="snowflake-o"
-        size={50}
-        color="black"
-        onPress={() => setLugar('nevera')}
-    />
-    <SimpleLineIcons
-        name="drawer"
-        size={50}
-        color="black"
-        onPress={() => setLugar('cajon')}
+                <MaterialCommunityIcons
+                    name="fridge-outline"
+                    size={50}
+                    color="black"
+                    onPress={() => setLugar('Refrigerador')}
                 />
-                
+                <FontAwesome
+                    name="snowflake-o"
+                    size={50}
+                    color="black"
+                    onPress={() => setLugar('Congelador')}
+                />
+                <SimpleLineIcons
+                    name="drawer"
+                    size={50}
+                    color="black"
+                    onPress={() => setLugar('Gabinete')}
+                />
             </View>
             {showSavedMessage && (
                 <View style={styles.savedMessageContainer}>
@@ -243,6 +248,7 @@ const styles = StyleSheet.create({
     iconContainer: {
         width: '100%',
         alignItems: 'center',
+        
     },
     separator: {
         height: 20,

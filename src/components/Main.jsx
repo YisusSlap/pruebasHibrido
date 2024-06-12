@@ -11,6 +11,7 @@ import FoodListScreen from './FoodListScreen';
 import AddFoodScreen from './AddFoodScreen';
 import ManualEntryScreen from './ManualEntryScreen';
 import BarcodeScannerScreen from './BarcodeScannerScreen';
+import ProductScreen from './ProductScreen'
 
 // Iconos
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -51,6 +52,20 @@ function AddFoodStack() {
   );
 }
 
+function AddProductScreen() {
+  return (
+    <Stack.Navigator
+      initialRouteName='FoodListScreen'>
+        <Stack.Screen name='FoodListScreen' component={FoodListScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name='ProductScreen' component={ProductScreen}
+        options={{
+          headerShown: true,
+          title: "Producto"
+        }}/>
+    </Stack.Navigator>
+  );
+}
+
 function MainStack() {
   return (
     <Tab.Navigator
@@ -80,8 +95,8 @@ function MainStack() {
         }}
       />
       <Tab.Screen 
-        name="FoodListScreen" 
-        component={FoodListScreen}
+        name="AddProductScreen" 
+        component={AddProductScreen}
         options={{
           tabBarIcon: ({color, size}) => (
             <FontAwesome name="search" size={size} color={color} />

@@ -4,11 +4,13 @@ import Constants from 'expo-constants';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { appFirebase } from './Firebase-config';
+import { useNavigation } from '@react-navigation/native';
 
 const FoodListScreen = () => {
     const [foodList, setFoodList] = useState([]);
     const [selectedMenu, setSelectedMenu] = useState('Todo');
     const [userId, setUserId] = useState(null);
+    const navigation = useNavigation();
 
     useEffect(() => {
         const auth = getAuth(appFirebase);
@@ -24,49 +26,54 @@ const FoodListScreen = () => {
     }, []);
 
     useEffect(() => {
-        if (selectedMenu === 'Todo' && userId) {
+        if (userId) {
             fetchFoodData();
         }
     }, [selectedMenu, userId]);
 
     const fetchFoodData = async () => {
         try {
-            const db = getFirestore();
-            const q = query(collection(db, 'productos'), where('userId', '==', userId));
+            const db = getFirestore(appFirebase);
+            let q;
+            if (selectedMenu === 'Todo') {
+                q = query(collection(db, 'productos'), where('userId', '==', userId));
+            } else {
+                q = query(collection(db, 'productos'), where('userId', '==', userId), where('sitio', '==', selectedMenu));
+            }
             const snapshot = await getDocs(q);
-            const foods = snapshot.docs.map(doc => doc.data().productName);
+            const foods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setFoodList(foods);
         } catch (error) {
             console.error('Error fetching food data:', error);
         }
     };
 
-    const handleAddFood = (food) => {
-        setFoodList([...foodList, food]);
+    const handleItemPress = (item) => {
+        navigation.navigate('ProductScreen', { item });
     };
 
     const renderMenuItem = ({ item }) => (
         <TouchableOpacity
             style={[styles.menuItem, item === selectedMenu && styles.selectedMenuItem]}
-            onPress={() => setSelectedMenu(item === selectedMenu ? 'Todo' : item)}>
+            onPress={() => setSelectedMenu(item)}>
             <Text style={styles.menuText}>{item}</Text>
         </TouchableOpacity>
     );
 
     const renderItem = ({ item }) => (
-        <View style={styles.foodItem} key={item}>
-            <Text style={styles.foodName}>{item}</Text>
-        </View>
+        <TouchableOpacity onPress={() => handleItemPress(item)}>
+            <View style={styles.foodItem} key={item.id}>
+                <Text style={styles.foodName}>{item.productName}</Text>
+            </View>
+        </TouchableOpacity>
     );
 
     return (
         <View style={styles.container}>
-            {/* Input para el buscador */}
             <TextInput
                 style={styles.searchInput}
                 placeholder="Buscar..."
             />
-            {/* Menú horizontal */}
             <View style={styles.menuContainer}>
                 <FlatList
                     data={['Todo', 'Refrigerador', 'Congelador', 'Gabinete']}
@@ -76,11 +83,10 @@ const FoodListScreen = () => {
                     showsHorizontalScrollIndicator={false}
                 />
             </View>
-            {/* Lista de alimentos */}
             <FlatList
                 data={foodList}
                 renderItem={renderItem}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item.id}
             />
         </View>
     );
@@ -101,23 +107,21 @@ const styles = StyleSheet.create({
         borderRadius: 5,
     },
     menuContainer: {
-        height: 50, // Altura del menú horizontal
-        marginBottom: 10, // Espacio entre el buscador y el menú
+        height: 50, 
+        marginBottom: 10, 
     },
     menuItem: {
         paddingHorizontal: 16,
         paddingVertical: 8,
         marginRight: 10,
         borderRadius: 20,
+        backgroundColor: '#f2f2f2',
     },
     selectedMenuItem: {
         backgroundColor: '#007bff',
     },
     menuText: {
         color: '#000',
-    },
-    selectedMenuText: {
-        color: '#fff',
     },
     foodItem: {
         padding: 12,
