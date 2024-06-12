@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, Modal, Image, Button, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Dimensions, Modal, Image, TouchableOpacity } from 'react-native';
 import Constants from 'expo-constants';
 import StyleText from './StyleText';
 import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons desde expo-vector-icons
+import Swiper from 'react-native-swiper';
 
 const { width } = Dimensions.get('window');
 const CELL_WIDTH = (width - 130) / 3; // El ancho de la celda se ajusta restando 40 píxeles (10 píxeles de espacio a cada lado de la celda) y dividiendo por 3
@@ -61,8 +62,20 @@ const WelcomeScreen = () => {
         </View>
       </Modal>
 
-      {/* Grid */}
-      {renderGrid()}
+      {/* ViewPager */}
+      <Swiper style={styles.wrapper} showsButtons={false} loop={false}>
+        <View style={styles.slide}>
+          {renderGrid()}
+        </View>
+        <View style={styles.slide}>
+          {/* Contenido de la segunda página del ViewPager */}
+          <StyleText>Segunda Página</StyleText>
+        </View>
+        <View style={styles.slide}>
+          {/* Contenido de la tercera página del ViewPager */}
+          <StyleText>Tercera Página</StyleText>
+        </View>
+      </Swiper>
     </View>
   );
 };
@@ -70,9 +83,6 @@ const WelcomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#fce4cc', // Fondo de la ventana rojo
     marginTop: Constants.statusBarHeight
   },
@@ -120,6 +130,12 @@ const styles = StyleSheet.create({
     width: CELL_WIDTH,
     height: CELL_HEIGHT,
     marginHorizontal: 11, // Espacio horizontal entre celdas
+  },
+  wrapper: {},
+  slide: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
