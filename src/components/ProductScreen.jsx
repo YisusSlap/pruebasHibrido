@@ -36,7 +36,7 @@ const ProductScreen = ({ route }) => {
                 </View>
                 <View style={styles.infoItem}>
                     <Text style={styles.label}>Ingredientes:</Text>
-                    <Text style={styles.value}>{item.ingredientes}</Text>
+                    <Text style={styles.value}>{item.imgredientes}</Text>
                 </View>
                 <View style={styles.infoItem}>
                     <Text style={styles.label}>Información:</Text>
@@ -45,10 +45,6 @@ const ProductScreen = ({ route }) => {
                 <View style={styles.infoItem}>
                     <Text style={styles.label}>Información Nutricional:</Text>
                     <Text style={styles.value}>{item.infoNutricional}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>Lugar:</Text>
-                    <Text style={styles.value}>{item.sitio}</Text>
                 </View>
             </View>
         </View>
@@ -88,12 +84,12 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     label: {
-        fontSize: 18,
+        fontSize: 12,
         fontWeight: 'bold',
         marginBottom: 4,
     },
     value: {
-        fontSize: 16,
+        fontSize: 10,
         color: '#555',
     },
 });

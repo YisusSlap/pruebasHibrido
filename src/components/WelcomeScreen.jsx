@@ -1,29 +1,94 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, Modal, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Dimensions, Modal, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Constants from 'expo-constants';
 import StyleText from './StyleText';
-import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons desde expo-vector-icons
 import Swiper from 'react-native-swiper';
+import { Ionicons } from '@expo/vector-icons';
+import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { appFirebase } from './Firebase-config';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
-const CELL_WIDTH = (width - 130) / 3; // El ancho de la celda se ajusta restando 40 píxeles (10 píxeles de espacio a cada lado de la celda) y dividiendo por 3
-const CELL_HEIGHT = CELL_WIDTH;
+const CELL_WIDTH = (width - 130) / 3;
 
 const WelcomeScreen = () => {
   const [showModal, setShowModal] = useState(true);
+  const [productsPages, setProductsPages] = useState([[], [], []]); // Estado para almacenar los productos de cada página
+  const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(false); // Estado para controlar la carga de productos
+  const navigation = useNavigation();
+  const isFocused = useIsFocused(); // Hook para saber si la pantalla está enfocada
+
+  useEffect(() => {
+    const auth = getAuth(appFirebase);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+        if (isFocused) {
+          fetchProducts(user.uid);
+        }
+      } else {
+        setUserId(null);
+        setProductsPages([[], [], []]); // Limpiar los productos si el usuario no está autenticado
+      }
+    });
+
+    return () => unsubscribe();
+  }, [isFocused]);
+
+  const fetchProducts = async (userId) => {
+    setLoading(true); // Iniciar la carga de productos
+    try {
+      const db = getFirestore(appFirebase);
+      // Consulta para obtener todos los productos del usuario actual
+      const q = query(collection(db, 'productos'), where('userId', '==', userId));
+      const querySnapshot = await getDocs(q);
+      const productsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        foto: doc.data().foto, // Se asume que 'foto' es el campo que contiene la URL de la imagen
+      }));
+
+      // Dividir los productos en páginas secuencialmente
+      const pages = [[], [], []]; // Inicializar un array de arrays para cada página
+      let pageIndex = 0;
+      productsData.forEach((product) => {
+        pages[pageIndex].push(product);
+        if (pages[pageIndex].length === 21) { // 7 filas * 3 columnas = 21 celdas por página
+          pageIndex++;
+        }
+      });
+
+      setProductsPages(pages); // Actualizar el estado con los productos divididos en páginas
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false); // Finalizar la carga de productos
+    }
+  };
 
   const closeModal = () => {
     setShowModal(false);
   };
 
-  const renderGrid = () => {
+  const renderGrid = (pageNumber) => {
     const grid = [];
     for (let i = 0; i < 7; i++) {
       const row = [];
       for (let j = 0; j < 3; j++) {
-        row.push(
-          <View key={`${i}-${j}`} style={styles.cell}></View>
-        );
+        // Calcular el índice del producto en el grid
+        const index = i * 3 + j;
+        if (productsPages[pageNumber][index]) {
+          row.push(
+            <View key={`${i}-${j}`} style={styles.cell}>
+              <Image source={{ uri: productsPages[pageNumber][index].foto }} style={styles.productImage} />
+            </View>
+          );
+        } else {
+          row.push(
+            <View key={`${i}-${j}`} style={styles.cell}></View>
+          );
+        }
       }
       grid.push(
         <View key={i} style={styles.row}>
@@ -33,6 +98,14 @@ const WelcomeScreen = () => {
     }
     return grid;
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -65,15 +138,13 @@ const WelcomeScreen = () => {
       {/* ViewPager */}
       <Swiper style={styles.wrapper} showsButtons={false} loop={false}>
         <View style={styles.slide}>
-          {renderGrid()}
+          {renderGrid(0)} 
         </View>
         <View style={styles.slide}>
-          {/* Contenido de la segunda página del ViewPager */}
-          <StyleText>Segunda Página</StyleText>
+          {renderGrid(1)} 
         </View>
         <View style={styles.slide}>
-          {/* Contenido de la tercera página del ViewPager */}
-          <StyleText>Tercera Página</StyleText>
+          {renderGrid(2)} 
         </View>
       </Swiper>
     </View>
@@ -82,15 +153,19 @@ const WelcomeScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: '#fce4cc', // Fondo de la ventana rojo
-    marginTop: Constants.statusBarHeight
+    flex: 1,
+    marginTop: Constants.statusBarHeight,
+    backgroundColor: '#fce4cc', // Fondo blanco para evitar superposiciones con el SVG
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo oscuro transparente para el modal
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     backgroundColor: '#fff',
@@ -110,7 +185,7 @@ const styles = StyleSheet.create({
     height: 160,
   },
   title: {
-    fontSize: 32, // Aumento del tamaño del texto
+    fontSize: 32,
     fontWeight: 'bold',
     marginTop: 10,
   },
@@ -118,18 +193,27 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   welcomeImage: {
-    width: 200, // Ajuste del tamaño de la imagen
-    height: 200, // Ajuste del tamaño de la imagen
+    width: 200,
+    height: 200,
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 11, // Espacio entre filas
+    marginBottom: 11,
   },
   cell: {
     backgroundColor: '#cbcbcb',
     width: CELL_WIDTH,
-    height: CELL_HEIGHT,
-    marginHorizontal: 11, // Espacio horizontal entre celdas
+    height: CELL_WIDTH,
+    marginHorizontal: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  productImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+    borderRadius: 8,
   },
   wrapper: {},
   slide: {
