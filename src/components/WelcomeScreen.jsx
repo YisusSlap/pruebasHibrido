@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Modal, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Dimensions, Modal, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import Constants from 'expo-constants';
 import StyleText from './StyleText';
 import Swiper from 'react-native-swiper';
 import { Ionicons } from '@expo/vector-icons';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { appFirebase } from './Firebase-config';
+import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { getStorage, ref, deleteObject } from 'firebase/storage';
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Importa getAuth y onAuthStateChanged
 import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { LongPressGestureHandler, State } from 'react-native-gesture-handler';
+import { appFirebase } from './Firebase-config';
 
 const { width } = Dimensions.get('window');
 const CELL_WIDTH = (width - 130) / 3;
@@ -71,6 +73,33 @@ const WelcomeScreen = () => {
     setShowModal(false);
   };
 
+  const handleDeleteProduct = async (productId, imageUrl) => {
+    try {
+      const db = getFirestore(appFirebase);
+      const productRef = doc(db, 'productos', productId);
+      await deleteDoc(productRef);
+
+      const storage = getStorage(appFirebase);
+      const imageRef = ref(storage, imageUrl);
+      await deleteObject(imageRef);
+
+      // Refrescar la lista de productos después de la eliminación
+      const updatedProducts = productsPages.flat().filter(product => product.id !== productId);
+      const updatedPages = [[], [], []]; // Array actualizado para almacenar los productos
+      let pageIndex = 0;
+      updatedProducts.forEach((product) => {
+        updatedPages[pageIndex].push(product);
+        if (updatedPages[pageIndex].length === 21) { // 7 filas * 3 columnas = 21 celdas por página
+          pageIndex++;
+        }
+      });
+      setProductsPages(updatedPages);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      // Manejar el error como sea necesario (por ejemplo, mostrar un mensaje de error)
+    }
+  };
+
   const renderGrid = (pageNumber) => {
     const grid = [];
     for (let i = 0; i < 7; i++) {
@@ -80,9 +109,35 @@ const WelcomeScreen = () => {
         const index = i * 3 + j;
         if (productsPages[pageNumber][index]) {
           row.push(
-            <View key={`${i}-${j}`} style={styles.cell}>
-              <Image source={{ uri: productsPages[pageNumber][index].foto }} style={styles.productImage} />
-            </View>
+            <LongPressGestureHandler
+              key={`${i}-${j}`}
+              onHandlerStateChange={({ nativeEvent }) => {
+                if (nativeEvent.state === State.ACTIVE) {
+                  const productId = productsPages[pageNumber][index].id;
+                  const imageUrl = productsPages[pageNumber][index].foto;
+                  Alert.alert(
+                    'Confirmación',
+                    '¿Estás seguro de que quieres eliminar este producto?',
+                    [
+                      {
+                        text: 'Cancelar',
+                        style: 'cancel'
+                      },
+                      {
+                        text: 'Eliminar',
+                        style: 'destructive',
+                        onPress: () => handleDeleteProduct(productId, imageUrl),
+                      }
+                    ]
+                  );
+                }
+              }}
+              minDurationMs={800} // Duración mínima de presionar para activar el evento
+            >
+              <View style={styles.cell}>
+                <Image source={{ uri: productsPages[pageNumber][index].foto }} style={styles.productImage} />
+              </View>
+            </LongPressGestureHandler>
           );
         } else {
           row.push(
@@ -138,13 +193,13 @@ const WelcomeScreen = () => {
       {/* ViewPager */}
       <Swiper style={styles.wrapper} showsButtons={false} loop={false}>
         <View style={styles.slide}>
-          {renderGrid(0)} 
+          {renderGrid(0)}
         </View>
         <View style={styles.slide}>
-          {renderGrid(1)} 
+          {renderGrid(1)}
         </View>
         <View style={styles.slide}>
-          {renderGrid(2)} 
+          {renderGrid(2)}
         </View>
       </Swiper>
     </View>
