@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-
+import { ref, get, child } from "firebase/database"; //
+import { database } from './FirebaseConfigBarcode';
 const BarcodeScannerScreen = () => {
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
@@ -13,10 +14,43 @@ const BarcodeScannerScreen = () => {
         })();
     }, []);
 
-    const handleBarCodeScanned = ({ type, data }) => {
+    const handleBarCodeScanned = async ({ type, data }) => {
         setScanned(true);
         alert(`Código de barras escaneado: ${data}`);
+
+        try {
+            const snapshot = await get(ref(database, 'alimento'));
+            if (snapshot.exists()) {
+                const alimentos = snapshot.val();
+                let foundProduct = null;
+
+                Object.keys(alimentos).forEach(key => {
+                    if (alimentos[key].CodigoBarras === data) {
+                        foundProduct = alimentos[key];
+                    }
+                });
+
+                if (foundProduct) {
+                    alert(`Nombre: ${foundProduct.nombre}`);
+                    alert(`Marca: ${foundProduct.Marca}`);
+                    alert(`Tamaño: ${foundProduct.Tamanio}`);
+                    alert(`Descripción: ${foundProduct.Descripcion}`);
+                    alert(`Información Nutricional: ${foundProduct.InfoNutrimental}`);
+                    alert(`Ingredientes: ${foundProduct.ingredientes}`);
+                } else {
+                    alert('Producto no encontrado');
+                }
+            } else {
+                alert('No se encontraron productos en la base de datos');
+            }
+        } catch (error) {
+            console.error("Error obteniendo el producto:", error);
+            alert('Error al obtener el producto');
+        }
     };
+
+
+
 
     if (hasPermission === null) {
         return <Text>Solicitando permiso para acceder a la cámara...</Text>;
