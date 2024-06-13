@@ -21,9 +21,6 @@ const Signin2 = () => {
     const handleSignin = () =>{
         signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
-            console.log('sign in')
-            const user = userCredential.user;
-            console.log(user)
             navigation.navigate('MainStack');
         })
         .catch(error => {

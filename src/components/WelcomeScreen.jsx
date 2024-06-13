@@ -28,7 +28,7 @@ const WelcomeScreen = () => {
       if (user) {
         setUserId(user.uid);
         if (isFocused) {
-          fetchProducts(user.uid);
+          fetchProducts(userId);
         }
       } else {
         setUserId(null);
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: Constants.statusBarHeight,
-    backgroundColor: '#fce4cc', // Fondo blanco para evitar superposiciones con el SVG
+    backgroundColor: '#fccccc', 
   },
   loadingContainer: {
     justifyContent: 'center',
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     marginBottom: 11,
   },
   cell: {
-    backgroundColor: '#cbcbcb',
+    backgroundColor: '#f1f1f1',
     width: CELL_WIDTH,
     height: CELL_WIDTH,
     marginHorizontal: 11,

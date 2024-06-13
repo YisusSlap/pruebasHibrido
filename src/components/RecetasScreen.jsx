@@ -4,17 +4,32 @@ import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { appFirebase } from './Firebase-config'; // Asegúrate de importar la configuración de Firebase adecuada
 
 const RecetasScreen = () => {
     const navigation = useNavigation();
     const [recetas, setRecetas] = useState([]);
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const auth = getAuth(appFirebase);
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUserId(user.uid);
+            } else {
+                setUserId(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+    
 
     useEffect(() => {
         const fetchRecetas = async () => {
             const db = getFirestore(appFirebase);
-            const recetasRef = collection(db, 'recetas');
-            const q = query(recetasRef);
+            const q = query(collection(db, 'recetas'), where('userId', '==', userId));
 
             try {
                 const querySnapshot = await getDocs(q);

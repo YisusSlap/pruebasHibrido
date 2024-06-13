@@ -23,6 +23,7 @@ const ManualEntryScreen = () => {
     const [loading, setLoading] = useState(false);
     const [lugar, setLugar] = useState('afuera');
     const [showSavedMessage, setShowSavedMessage] = useState(false);
+    const [selectedIcon, setSelectedIcon] = useState('');
 
     useEffect(() => {
         (async () => {
@@ -134,8 +135,7 @@ const ManualEntryScreen = () => {
                 )}
             </TouchableOpacity>
             <View style={styles.separator}></View>
-            
-                <View style={styles.inputContainer}>
+            <View style={styles.inputContainer}>
                 <ScrollView contentContainerStyle={styles.scrollViewContent}>
                     <TextInput
                         style={styles.input}
@@ -186,27 +186,35 @@ const ManualEntryScreen = () => {
                         onChangeText={setNutritionInformation}
                         multiline
                     />
-                    </ScrollView>
-                </View>
-            
+                </ScrollView>
+            </View>
             <View style={styles.bottomIconContainer}>
                 <MaterialCommunityIcons
                     name="fridge-outline"
                     size={50}
-                    color="black"
-                    onPress={() => setLugar('Refrigerador')}
+                    color={selectedIcon === 'Refrigerador' ? '#800000' : 'black'}
+                    onPress={() => {
+                        setLugar('Refrigerador');
+                        setSelectedIcon('Refrigerador');
+                    }}
                 />
                 <FontAwesome
                     name="snowflake-o"
                     size={50}
-                    color="black"
-                    onPress={() => setLugar('Congelador')}
+                    color={selectedIcon === 'Congelador' ? '#800000' : 'black'}
+                    onPress={() => {
+                        setLugar('Congelador');
+                        setSelectedIcon('Congelador');
+                    }}
                 />
                 <SimpleLineIcons
                     name="drawer"
                     size={50}
-                    color="black"
-                    onPress={() => setLugar('Gabinete')}
+                    color={selectedIcon === 'Gabinete' ? '#800000' : 'black'}
+                    onPress={() => {
+                        setLugar('Gabinete');
+                        setSelectedIcon('Gabinete');
+                    }}
                 />
             </View>
             {showSavedMessage && (
