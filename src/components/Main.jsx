@@ -13,6 +13,8 @@ import AddFoodScreen from './AddFoodScreen';
 import ManualEntryScreen from './ManualEntryScreen';
 import BarcodeScannerScreen from './BarcodeScannerScreen';
 import ProductScreen from './ProductScreen'
+import RecetasScreen from './RecetasScreen';
+import CreateRecipe from './CreateRecipe';
 
 // Iconos
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -66,6 +68,19 @@ function AddProductScreen() {
     </Stack.Navigator>
   );
 }
+function AddRecipeScreen(){
+  return (
+    <Stack.Navigator
+      initialRouteName='RecetasScreen'>
+        <Stack.Screen name='RecetasScreen' component={RecetasScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name='CreateRecipe' component={CreateRecipe}
+        options={{
+          headerShown: true,
+          title: "Crear Receta"
+        }}/>
+    </Stack.Navigator>
+  );
+}
 
 function MainStack() {
   return (
@@ -101,6 +116,17 @@ function MainStack() {
         options={{
           tabBarIcon: ({color, size}) => (
             <FontAwesome name="search" size={size} color={color} />
+          ),
+          headerShown: false,
+          tabBarLabel: ""
+        }}
+      />
+      <Tab.Screen 
+        name="AddRecipeScreen" 
+        component={AddRecipeScreen}
+        options={{
+          tabBarIcon: ({color, size}) => (
+            <MaterialCommunityIcons name="file-document-edit-outline" size={size} color={color} />
           ),
           headerShown: false,
           tabBarLabel: ""
