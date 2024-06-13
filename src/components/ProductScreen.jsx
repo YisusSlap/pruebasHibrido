@@ -40,7 +40,7 @@ const ProductScreen = ({ route }) => {
                         <Text style={styles.value}>{item.imgredientes}</Text>
                     </View>
                     <View style={styles.infoItem}>
-                        <Text style={styles.label}>Información:</Text>
+                        <Text style={styles.label}>Caducidad:</Text>
                         <Text style={styles.value}>{item.informacion}</Text>
                     </View>
                     <View style={styles.infoItem}>
@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     label: {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 'bold',
         marginBottom: 4,
     },
     value: {
-        fontSize: 10,
+        fontSize: 12,
         color: '#555',
     },
 });

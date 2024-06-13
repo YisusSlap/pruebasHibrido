@@ -16,6 +16,7 @@ import ProductScreen from './ProductScreen'
 import RecetasScreen from './RecetasScreen';
 import CreateRecipe from './CreateRecipe';
 import RecipeScreen from './RecipeScreen';
+import ScannedScreen from './ScannedScreen';
 
 // Iconos
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -49,7 +50,14 @@ function AddFoodStack() {
       component={BarcodeScannerScreen}
       options={{
         headerShown: true,
-        title: "Scanner"
+        title: "Lector de codigo de barras"
+      }}
+      />
+      <Stack.Screen name="ScannedScreen" 
+      component={ScannedScreen}
+      options={{
+        headerShown: true,
+        title: "Producto"
       }}
       />
     </Stack.Navigator>
