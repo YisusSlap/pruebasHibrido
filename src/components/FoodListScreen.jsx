@@ -10,6 +10,7 @@ const FoodListScreen = () => {
     const [foodList, setFoodList] = useState([]);
     const [selectedMenu, setSelectedMenu] = useState('Todo');
     const [userId, setUserId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -60,19 +61,28 @@ const FoodListScreen = () => {
         </TouchableOpacity>
     );
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity onPress={() => handleItemPress(item)}>
-            <View style={styles.foodItem} key={item.id}>
-                <Text style={styles.foodName}>{item.productName}</Text>
-            </View>
-        </TouchableOpacity>
-    );
+    const renderItem = ({ item }) => {
+        // Filtrar productos basado en el término de búsqueda
+        if (searchTerm !== '' && !item.productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+            return null;
+        }
+
+        return (
+            <TouchableOpacity onPress={() => handleItemPress(item)}>
+                <View style={styles.foodItem} key={item.id}>
+                    <Text style={styles.foodName}>{item.productName}</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <View style={styles.container}>
             <TextInput
                 style={styles.searchInput}
                 placeholder="Buscar..."
+                value={searchTerm}
+                onChangeText={setSearchTerm}
             />
             <View style={styles.menuContainer}>
                 <FlatList
