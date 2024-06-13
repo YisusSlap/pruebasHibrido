@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TextInput, Text, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Image, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome, SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { appFirebase } from './Firebase-config';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-
 
 const db = getFirestore(appFirebase);
 const storage = getStorage(appFirebase);
@@ -23,7 +22,6 @@ const ManualEntryScreen = () => {
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [lugar, setLugar] = useState('afuera');
-
     const [showSavedMessage, setShowSavedMessage] = useState(false);
 
     useEffect(() => {
@@ -50,18 +48,10 @@ const ManualEntryScreen = () => {
 
     const uploadImage = async (uri) => {
         try {
-            // Fetch the image from the given URI
             const response = await fetch(uri);
-            // Convert the image response to a Blob
             const blob = await response.blob();
-
-            // Create a reference to the storage location
             const refArchivo = ref(storage, `images/${Date.now()}.jpg`);
-
-            // Upload the blob to Firebase Storage
             await uploadBytes(refArchivo, blob);
-
-            // Get the download URL
             return await getDownloadURL(refArchivo);
         } catch (error) {
             console.error('Error uploading image:', error);
@@ -134,7 +124,7 @@ const ManualEntryScreen = () => {
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Ionicons name="checkmark" size={30} color="black" />
+                <Ionicons name="checkmark" size={50} color="black" />
             </TouchableOpacity>
             <TouchableOpacity onPress={pickImage} style={styles.iconContainer}>
                 {image ? (
@@ -144,56 +134,61 @@ const ManualEntryScreen = () => {
                 )}
             </TouchableOpacity>
             <View style={styles.separator}></View>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Nombre del alimento"
-                    value={foodName}
-                    onChangeText={setFoodName}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Marca"
-                    value={brand}
-                    onChangeText={setBrand}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Categoría"
-                    value={category}
-                    onChangeText={setCategory}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Tamaño"
-                    value={size}
-                    onChangeText={setSize}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Descripción"
-                    value={description}
-                    onChangeText={setDescription}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Ingredientes"
-                    value={ingredients}
-                    onChangeText={setIngredients}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Información"
-                    value={information}
-                    onChangeText={setInformation}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Información nutrimental"
-                    value={nutritionInformation}
-                    onChangeText={setNutritionInformation}
-                />
-            </View>
+            
+                <View style={styles.inputContainer}>
+                <ScrollView contentContainerStyle={styles.scrollViewContent}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nombre del alimento"
+                        value={foodName}
+                        onChangeText={setFoodName}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Marca"
+                        value={brand}
+                        onChangeText={setBrand}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Categoría"
+                        value={category}
+                        onChangeText={setCategory}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Tamaño"
+                        value={size}
+                        onChangeText={setSize}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Descripción"
+                        value={description}
+                        onChangeText={setDescription}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Ingredientes"
+                        value={ingredients}
+                        onChangeText={setIngredients}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Información"
+                        value={information}
+                        onChangeText={setInformation}
+                    />
+                    <TextInput
+                        style={styles.multiLineInput}
+                        placeholder="Información nutrimental"
+                        value={nutritionInformation}
+                        onChangeText={setNutritionInformation}
+                        multiline
+                    />
+                    </ScrollView>
+                </View>
+            
             <View style={styles.bottomIconContainer}>
                 <MaterialCommunityIcons
                     name="fridge-outline"
@@ -246,14 +241,18 @@ const styles = StyleSheet.create({
         right: 10,
     },
     iconContainer: {
-        width: '100%',
+        width: '60%',
         alignItems: 'center',
-        
     },
     separator: {
         height: 20,
     },
+    scrollViewContent: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     inputContainer: {
+        height: '65%',
         width: '80%',
         paddingHorizontal: 20,
         paddingVertical: 10,
@@ -261,11 +260,23 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     input: {
-        height: 30,
+        height: 40,
         width: '100%',
         paddingHorizontal: 8,
         marginBottom: 8,
         backgroundColor: 'transparent',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    multiLineInput: {
+        width: '100%',
+        paddingHorizontal: 8,
+        marginBottom: 8,
+        backgroundColor: 'transparent',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+        maxHeight: 150,
+        textAlignVertical: 'top',
     },
     bottomIconContainer: {
         flexDirection: 'row',

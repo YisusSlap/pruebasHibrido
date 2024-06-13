@@ -99,13 +99,13 @@ const WelcomeScreen = () => {
     return grid;
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View style={[styles.container, styles.loadingContainer]}>
+  //       <ActivityIndicator size="large" color="#0000ff" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={styles.container}>
