@@ -168,14 +168,14 @@ const ManualEntryScreen = () => {
                         onChangeText={setDescription}
                     />
                     <TextInput
-                        style={styles.input}
+                        style={styles.multiLineInput}
                         placeholder="Ingredientes"
                         value={ingredients}
                         onChangeText={setIngredients}
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Información"
+                        placeholder="Caducidad"
                         value={information}
                         onChangeText={setInformation}
                     />

@@ -15,6 +15,7 @@ import BarcodeScannerScreen from './BarcodeScannerScreen';
 import ProductScreen from './ProductScreen'
 import RecetasScreen from './RecetasScreen';
 import CreateRecipe from './CreateRecipe';
+import RecipeScreen from './RecipeScreen';
 
 // Iconos
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -74,6 +75,11 @@ function AddRecipeScreen(){
       initialRouteName='RecetasScreen'>
         <Stack.Screen name='RecetasScreen' component={RecetasScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='CreateRecipe' component={CreateRecipe}
+        options={{
+          headerShown: true,
+          title: "Crear Receta"
+        }}/>
+        <Stack.Screen name="RecipeScreen" component={RecipeScreen} 
         options={{
           headerShown: true,
           title: "Crear Receta"

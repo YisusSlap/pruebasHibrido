@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { appFirebase } from './Firebase-config'; // Asegúrate de importar la configuración de Firebase adecuada
+import { appFirebase } from './Firebase-config';
 
 const RecetasScreen = () => {
     const navigation = useNavigation();
@@ -24,7 +24,6 @@ const RecetasScreen = () => {
 
         return () => unsubscribe();
     }, []);
-    
 
     useEffect(() => {
         const fetchRecetas = async () => {
@@ -40,40 +39,37 @@ const RecetasScreen = () => {
                 setRecetas(recetasData);
             } catch (error) {
                 console.error('Error fetching recetas:', error);
-                // Puedes manejar el error aquí según tu lógica de la aplicación
             }
         };
 
         fetchRecetas();
-    }, []);
+    }, [userId]);
 
-    // Función para manejar la acción de añadir receta (aquí podrías navegar a la pantalla de creación de receta)
     const handleAgregarReceta = () => {
         navigation.navigate('CreateRecipe');
     };
 
+    const handleVerReceta = (recipe) => {
+        navigation.navigate('RecipeScreen', { recipe });
+    };
+
     return (
         <View style={styles.container}>
-            
             <Text style={styles.headerText}>Mis Recetas</Text>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.addButton} onPress={handleAgregarReceta}>
-                    <Ionicons name="add-circle" size={28} color="#800000" />
-                    <Text style={styles.recetasCreadasText}> Añadir receta</Text>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.addButton} onPress={handleAgregarReceta}>
+                <Ionicons name="add-circle" size={28} color="#800000" />
+                <Text style={styles.recetasCreadasText}> Añadir receta</Text>
+            </TouchableOpacity>
 
-            
             <Text style={styles.recetasCreadasText}>Recetas Creadas</Text>
 
-            
             <FlatList
                 data={recetas}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={styles.recetaItem}>
+                    <TouchableOpacity style={styles.recetaItem} onPress={() => handleVerReceta(item)}>
                         <Text>{item.name}</Text>
-                    </View>
+                    </TouchableOpacity>
                 )}
             />
         </View>
@@ -86,17 +82,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: Constants.statusBarHeight,
-        paddingVertical: 16
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 20,
+        paddingVertical: 16,
     },
     headerText: {
         fontSize: 24,
         fontWeight: 'bold',
+        marginBottom: 20,
     },
     recetasCreadasText: {
         fontSize: 20,
@@ -104,12 +95,14 @@ const styles = StyleSheet.create({
     recetaItem: {
         paddingVertical: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#ccc', // Color de borde gris claro, ajusta según tu paleta de colores
+        borderBottomColor: '#ccc',
+        width: '100%',
+        alignItems: 'center',
     },
     addButton: {
-        marginTop: 20,
         flexDirection: 'row',
         alignItems: 'center',
+        marginBottom: 20,
     },
 });
 
