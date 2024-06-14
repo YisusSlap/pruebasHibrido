@@ -6,6 +6,7 @@ import { appFirebase } from './Firebase-config';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const db = getFirestore(appFirebase);
 const storage = getStorage(appFirebase);
@@ -26,6 +27,7 @@ const ScannedScreen = ({ route }) => {
     const [lugar, setLugar] = useState('afuera');
     const [showSavedMessage, setShowSavedMessage] = useState(false);
     const [selectedIcon, setSelectedIcon] = useState('');
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -123,6 +125,20 @@ const ScannedScreen = ({ route }) => {
             ]
         );
     };
+    const showDatePicker = () => {
+        setDatePickerVisibility(true);
+    };
+
+    const handleConfirmDate = (date) => {
+        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        const formattedDate = localDate.toISOString().split('T')[0];
+        setInformation(formattedDate); // Guarda la fecha seleccionada
+        hideDatePicker();
+    };
+
+    const hideDatePicker = () => {
+        setDatePickerVisibility(false);
+    };
 
     return (
         <View style={styles.container}>
@@ -176,12 +192,16 @@ const ScannedScreen = ({ route }) => {
                         onChangeText={setIngredients}
                         multiline
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Caducidad"
-                        value={information}
-                        onChangeText={setInformation}
-                    />
+                    <TouchableOpacity onPress={showDatePicker} style={styles.input}>
+                        <View pointerEvents="none">
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Caducidad"
+                                value={information}
+                                editable={true}
+                            />
+                        </View>
+                    </TouchableOpacity>
                     <TextInput
                         style={styles.multiLineInput}
                         placeholder="Información nutrimental"
@@ -191,6 +211,12 @@ const ScannedScreen = ({ route }) => {
                     />
                 </ScrollView>
             </View>
+            <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleConfirmDate}
+                onCancel={hideDatePicker}
+            />
             <View style={styles.bottomIconContainer}>
                 <MaterialCommunityIcons
                     name="fridge-outline"

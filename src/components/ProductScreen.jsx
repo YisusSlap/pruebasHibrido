@@ -1,11 +1,8 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
-import Constants from 'expo-constants';
 
 const ProductScreen = ({ route }) => {
     const { item } = route.params;
-    
-    console.log("URL de la imagen:", item.foto); // Log para verificar la URL
 
     return (
         <View style={styles.container}>
@@ -86,12 +83,12 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     label: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 4,
     },
     value: {
-        fontSize: 12,
+        fontSize: 14,
         color: '#555',
     },
 });

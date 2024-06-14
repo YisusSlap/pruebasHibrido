@@ -90,7 +90,7 @@ function AddRecipeScreen(){
         <Stack.Screen name="RecipeScreen" component={RecipeScreen} 
         options={{
           headerShown: true,
-          title: "Crear Receta"
+          title: "Mi Receta"
         }}/>
     </Stack.Navigator>
   );

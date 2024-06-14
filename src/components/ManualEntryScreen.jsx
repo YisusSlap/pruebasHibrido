@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TextInput, Text, TouchableOpacity, Image, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome, SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePickerModal from "react-native-modal-datetime-picker"; // Importa el selector de fecha
 import { appFirebase } from './Firebase-config';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
@@ -24,6 +25,7 @@ const ManualEntryScreen = () => {
     const [lugar, setLugar] = useState('afuera');
     const [showSavedMessage, setShowSavedMessage] = useState(false);
     const [selectedIcon, setSelectedIcon] = useState('');
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false); // Estado para controlar la visibilidad del selector de fecha
 
     useEffect(() => {
         (async () => {
@@ -68,12 +70,13 @@ const ManualEntryScreen = () => {
                 categoria: category,
                 tamanio: size,
                 descripcion: description,
-                imgredientes: ingredients,
+                ingredientes: ingredients,
                 informacion: information,
                 infoNutricional: nutritionInformation,
                 foto: imageUrl,
                 sitio: lugar,
                 userId: userId,
+                caducidad: information, // Asegúrate de guardar la fecha aquí defaultProps
             };
             await addDoc(collection(db, 'productos'), { ...info });
         } catch (error) {
@@ -120,6 +123,24 @@ const ManualEntryScreen = () => {
                 },
             ]
         );
+    };
+
+    // Función para manejar la apertura del selector de fecha
+    const showDatePicker = () => {
+        setDatePickerVisibility(true);
+    };
+
+    // Función para manejar la selección de fecha del selector
+    const handleConfirmDate = (date) => {
+        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        const formattedDate = localDate.toISOString().split('T')[0];
+        setInformation(formattedDate); // Guarda la fecha seleccionada
+        hideDatePicker();
+    };
+
+    // Función para cerrar el selector de fecha
+    const hideDatePicker = () => {
+        setDatePickerVisibility(false);
     };
 
     return (
@@ -173,12 +194,16 @@ const ManualEntryScreen = () => {
                         value={ingredients}
                         onChangeText={setIngredients}
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Caducidad"
-                        value={information}
-                        onChangeText={setInformation}
-                    />
+                    <TouchableOpacity onPress={showDatePicker} style={styles.input}>
+                        <View pointerEvents="none">
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Caducidad"
+                                value={information}
+                                editable={true}
+                            />
+                        </View>
+                    </TouchableOpacity>
                     <TextInput
                         style={styles.multiLineInput}
                         placeholder="Información nutrimental"
@@ -188,6 +213,12 @@ const ManualEntryScreen = () => {
                     />
                 </ScrollView>
             </View>
+            <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleConfirmDate}
+                onCancel={hideDatePicker}
+            />
             <View style={styles.bottomIconContainer}>
                 <MaterialCommunityIcons
                     name="fridge-outline"
@@ -309,5 +340,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
+
 
 export default ManualEntryScreen;
