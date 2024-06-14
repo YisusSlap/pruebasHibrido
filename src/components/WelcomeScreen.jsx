@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Modal, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, Dimensions, Modal, Image, TouchableOpacity, Alert } from 'react-native';
 import Constants from 'expo-constants';
 import StyleText from './StyleText';
 import Swiper from 'react-native-swiper';
 import { Ionicons } from '@expo/vector-icons';
 import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Importa getAuth y onAuthStateChanged
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { LongPressGestureHandler, State } from 'react-native-gesture-handler';
 import { appFirebase } from './Firebase-config';
+import * as Notifications from 'expo-notifications';
 
 const { width } = Dimensions.get('window');
 const CELL_WIDTH = (width - 130) / 3;
 
 const WelcomeScreen = () => {
   const [showModal, setShowModal] = useState(true);
-  const [productsPages, setProductsPages] = useState([[], [], []]); // Estado para almacenar los productos de cada página
+  const [showExpirationModal, setShowExpirationModal] = useState(false);
+  const [expiringProduct, setExpiringProduct] = useState(null);
+  const [productsPages, setProductsPages] = useState([[], [], []]);
   const [userId, setUserId] = useState(null);
-  const [loading, setLoading] = useState(false); // Estado para controlar la carga de productos
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
-  const isFocused = useIsFocused(); // Hook para saber si la pantalla está enfocada
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     const auth = getAuth(appFirebase);
@@ -28,49 +31,104 @@ const WelcomeScreen = () => {
       if (user) {
         setUserId(user.uid);
         if (isFocused) {
-          fetchProducts(userId);
+          fetchProducts(user.uid);
         }
       } else {
         setUserId(null);
-        setProductsPages([[], [], []]); // Limpiar los productos si el usuario no está autenticado
+        setProductsPages([[], [], []]);
       }
     });
 
     return () => unsubscribe();
   }, [isFocused]);
 
+  useEffect(() => {
+    const requestPermissions = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('No se concedieron permisos para las notificaciones');
+      }
+    };
+
+    requestPermissions();
+  }, []);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification received:', notification);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   const fetchProducts = async (userId) => {
-    setLoading(true); // Iniciar la carga de productos
+    setLoading(true);
     try {
       const db = getFirestore(appFirebase);
-      // Consulta para obtener todos los productos del usuario actual
       const q = query(collection(db, 'productos'), where('userId', '==', userId));
       const querySnapshot = await getDocs(q);
       const productsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
-        foto: doc.data().foto, // Se asume que 'foto' es el campo que contiene la URL de la imagen
+        foto: doc.data().foto,
+        productName: doc.data().productName,
+        informacion: doc.data().informacion,
       }));
 
-      // Dividir los productos en páginas secuencialmente
-      const pages = [[], [], []]; // Inicializar un array de arrays para cada página
+      checkExpirationDates(productsData);
+
+      const pages = [[], [], []];
       let pageIndex = 0;
       productsData.forEach((product) => {
         pages[pageIndex].push(product);
-        if (pages[pageIndex].length === 21) { // 7 filas * 3 columnas = 21 celdas por página
+        if (pages[pageIndex].length === 21) {
           pageIndex++;
         }
       });
 
-      setProductsPages(pages); // Actualizar el estado con los productos divididos en páginas
+      setProductsPages(pages);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
-      setLoading(false); // Finalizar la carga de productos
+      setLoading(false);
     }
+  };
+
+  const checkExpirationDates = (products) => {
+    const currentDate = new Date();
+    for (const product of products) {
+      const expirationDate = new Date(product.informacion);
+      const diffInDays = Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24));
+
+      console.log(`Product: ${product.productName}, Expiration: ${product.informacion}, Days left: ${diffInDays}`);
+
+      if (diffInDays <= 2) {
+        setExpiringProduct(product);
+        setShowExpirationModal(true);
+        sendNotification(product.productName, product.informacion);
+        break;  // Sólo mostrar la primera coincidencia
+      }
+    }
+  };
+
+  const sendNotification = async (productName, expirationDate) => {
+    console.log(`Sending notification for ${productName} which expires on ${expirationDate}`);
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Producto Próximo a Caducar',
+        body: `${productName} caducará el ${expirationDate}`,
+      },
+      trigger: null,
+    });
   };
 
   const closeModal = () => {
     setShowModal(false);
+  };
+
+  const closeExpirationModal = () => {
+    setShowExpirationModal(false);
   };
 
   const handleDeleteProduct = async (productId, imageUrl) => {
@@ -83,20 +141,18 @@ const WelcomeScreen = () => {
       const imageRef = ref(storage, imageUrl);
       await deleteObject(imageRef);
 
-      // Refrescar la lista de productos después de la eliminación
       const updatedProducts = productsPages.flat().filter(product => product.id !== productId);
-      const updatedPages = [[], [], []]; // Array actualizado para almacenar los productos
+      const updatedPages = [[], [], []];
       let pageIndex = 0;
       updatedProducts.forEach((product) => {
         updatedPages[pageIndex].push(product);
-        if (updatedPages[pageIndex].length === 21) { // 7 filas * 3 columnas = 21 celdas por página
+        if (updatedPages[pageIndex].length === 21) {
           pageIndex++;
         }
       });
       setProductsPages(updatedPages);
     } catch (error) {
       console.error('Error deleting product:', error);
-      // Manejar el error como sea necesario (por ejemplo, mostrar un mensaje de error)
     }
   };
 
@@ -105,7 +161,6 @@ const WelcomeScreen = () => {
     for (let i = 0; i < 7; i++) {
       const row = [];
       for (let j = 0; j < 3; j++) {
-        // Calcular el índice del producto en el grid
         const index = i * 3 + j;
         if (productsPages[pageNumber][index]) {
           row.push(
@@ -132,7 +187,7 @@ const WelcomeScreen = () => {
                   );
                 }
               }}
-              minDurationMs={800} // Duración mínima de presionar para activar el evento
+              minDurationMs={800}
             >
               <View style={styles.cell}>
                 <Image source={{ uri: productsPages[pageNumber][index].foto }} style={styles.productImage} />
@@ -154,17 +209,8 @@ const WelcomeScreen = () => {
     return grid;
   };
 
-  // if (loading) {
-  //   return (
-  //     <View style={[styles.container, styles.loadingContainer]}>
-  //       <ActivityIndicator size="large" color="#0000ff" />
-  //     </View>
-  //   );
-  // }
-
   return (
     <View style={styles.container}>
-      {/* Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -173,7 +219,6 @@ const WelcomeScreen = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            {/* Botón de cierre */}
             <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
               <Ionicons name="close" size={24} color="black" />
             </TouchableOpacity>
@@ -182,7 +227,6 @@ const WelcomeScreen = () => {
             <View style={styles.descriptionContainer}>
               <StyleText>AlmaZen es una aplicación diseñada para ayudarte a diseñar un menú adaptado a tu alacena.</StyleText>
             </View>
-            {/* Aumento del tamaño de la imagen */}
             <View style={styles.imageContainer}>
               <Image source={require('./chef.png')} style={styles.welcomeImage} />
             </View>
@@ -190,7 +234,29 @@ const WelcomeScreen = () => {
         </View>
       </Modal>
 
-      {/* ViewPager */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showExpirationModal}
+        onRequestClose={closeExpirationModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity style={styles.closeButton} onPress={closeExpirationModal}>
+              <Ionicons name="close" size={24} color="black" />
+            </TouchableOpacity>
+            {expiringProduct && (
+              <>
+                <StyleText style={styles.title}>Producto Próximo a Caducar</StyleText>
+                <Image source={{ uri: expiringProduct.foto }} style={styles.expiringProductImage} />
+                <StyleText>{expiringProduct.productName}</StyleText>
+                <StyleText>Caduca el: {expiringProduct.informacion}</StyleText>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
       <Swiper style={styles.wrapper} showsButtons={false} loop={false}>
         <View style={styles.slide}>
           {renderGrid(0)}
@@ -210,7 +276,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: Constants.statusBarHeight,
-    backgroundColor: '#fccccc', 
+    backgroundColor: '#fccccc',
   },
   loadingContainer: {
     justifyContent: 'center',
@@ -276,6 +342,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  expiringProductImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+    marginVertical: 10,
+  },
 });
 
 export default WelcomeScreen;
+

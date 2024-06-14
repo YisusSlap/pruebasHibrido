@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, Alert, View, TextInput, TouchableOpacity, Image } from 'react-native';
 import StyleText from "./StyleText.jsx";
 import Constants from 'expo-constants';
@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "./Firebase-config.jsx";
+import * as Notifications from 'expo-notifications';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -14,6 +15,19 @@ const Signin2 = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const requestPermissions = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso de notificaciones denegado');
+      } else {
+        console.log('Permiso de notificaciones concedido');
+      }
+    };
+
+    requestPermissions();
+  }, []);
 
   const handleSignin = () => {
     signInWithEmailAndPassword(auth, email, password)
@@ -107,4 +121,3 @@ const styles = StyleSheet.create({
 });
 
 export default Signin2;
-

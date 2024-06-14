@@ -15,14 +15,23 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.yourapp",
+      "buildNumber": "1.0.0",
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "YOUR_GOOGLE_SIGN_IN_IOS_CLIENT_ID"
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.yisusslap.almazen"
+      "package": "com.yisusslap.almazen",
+      "versionCode": 1,
+      "permissions": ["NOTIFICATIONS"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
