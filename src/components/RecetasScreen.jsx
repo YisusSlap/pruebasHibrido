@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import Constants from 'expo-constants';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { appFirebase } from './Firebase-config';
 
 const RecetasScreen = () => {
     const navigation = useNavigation();
+    const isFocused = useIsFocused(); // Hook para detectar si la pantalla está enfocada
     const [recetas, setRecetas] = useState([]);
     const [userId, setUserId] = useState(null);
 
@@ -43,7 +44,7 @@ const RecetasScreen = () => {
         };
 
         fetchRecetas();
-    }, [userId]);
+    }, [userId, isFocused]); // Actualizar recetas cuando userId o isFocused cambien
 
     const handleAgregarReceta = () => {
         navigation.navigate('CreateRecipe');
@@ -51,6 +52,15 @@ const RecetasScreen = () => {
 
     const handleVerReceta = (recipe) => {
         navigation.navigate('RecipeScreen', { recipe });
+    };
+
+    // Función para renderizar el ícono si la receta es favorita
+    const renderIcon = (favorito) => {
+        if (favorito) {
+            return <MaterialCommunityIcons name="star" size={24} color="#800000" />;
+        } else {
+            return null; // No renderizar nada si no es favorito
+        }
     };
 
     return (
@@ -68,7 +78,8 @@ const RecetasScreen = () => {
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <TouchableOpacity style={styles.recetaItem} onPress={() => handleVerReceta(item)}>
-                        <Text>{item.name}</Text>
+                        {renderIcon(item.favorito)}
+                        <Text style={styles.recetaName}>{item.name}</Text>
                     </TouchableOpacity>
                 )}
             />
@@ -93,11 +104,15 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     recetaItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingVertical: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
         width: '100%',
-        alignItems: 'center',
+    },
+    recetaName: {
+        marginLeft: 10,
     },
     addButton: {
         flexDirection: 'row',

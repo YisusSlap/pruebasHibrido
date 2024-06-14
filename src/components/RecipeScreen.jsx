@@ -1,18 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import { getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { appFirebase } from './Firebase-config';
 
-const RecipeScreen = ({ route }) => {
+const RecipeScreen = ({ route, navigation }) => {
     const { recipe } = route.params;
-    const [fav, setFav] = useState('no');
+    const [fav, setFav] = useState(recipe.favorito);
+
+    const db = getFirestore(appFirebase); // Obtener instancia de Firestore
+    const auth = getAuth(appFirebase); // Obtener instancia de autenticación
+
+    // Actualizar el estado de favorito en Firestore cuando cambie 'fav'
+    const updateFavoriteStatus = async () => {
+        try {
+            const userId = auth.currentUser ? auth.currentUser.uid : null;
+            if (userId) {
+                const recipeRef = doc(db, 'recetas', recipe.id);
+                await updateDoc(recipeRef, { favorito: fav });
+            } else {
+                console.error('User not authenticated');
+            }
+        } catch (error) {
+            console.error('Error updating document:', error.message);
+        }
+    };
+
+    useEffect(() => {
+        // Actualizar favorito al montar el componente
+        updateFavoriteStatus();
+    }, [fav]); // Dependencias para el useEffect
 
     const toggleFavorite = () => {
-        setFav(prevFav => (prevFav === 'no' ? 'si' : 'no'));
+        const newFav = !fav;
+        setFav(newFav);
+        updateFavoriteStatus(newFav);
     };
 
     const handleShare = async () => {
-        const recipeText = `*Receta:*\n ${recipe.name}\n\n*Ingredientes:*\n${recipe.ingredients}\n\n*Pasos a seguir:*\n${recipe.steps}`;
+        const recipeText = `*Receta:*\n${recipe.name}\n\n*Ingredientes:*\n${recipe.ingredients}\n\n*Pasos a seguir:*\n${recipe.steps}`;
         await Clipboard.setStringAsync(recipeText);
         Alert.alert('Texto copiado', 'La receta se ha copiado al portapapeles.');
     };
@@ -27,10 +55,10 @@ const RecipeScreen = ({ route }) => {
                     <Text style={styles.headerText}>{recipe.name}</Text>
                     <View style={styles.iconContainer}>
                         <TouchableOpacity onPress={toggleFavorite}>
-                            {fav === 'no' ? (
-                                <Ionicons name="bookmark-outline" size={26} color="black" />
-                            ) : (
+                            {fav ? (
                                 <Ionicons name="bookmark" size={26} color="#800000" />
+                            ) : (
+                                <Ionicons name="bookmark-outline" size={26} color="black" />
                             )}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleShare}>
@@ -66,7 +94,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         backgroundColor: '#f2f2f2',
         borderRadius: 10,
-        alignItems: 'center', // Center the content within the container
+        alignItems: 'center', // Centrar el contenido dentro del contenedor
     },
     headerContainer: {
         flexDirection: 'row',
@@ -76,7 +104,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     headerText: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
     },
     iconContainer: {

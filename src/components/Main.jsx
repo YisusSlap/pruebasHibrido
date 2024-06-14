@@ -1,7 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
+import { useAuth, AuthProvider } from './AuthContext';
 import { NavigationContainer } from '@react-navigation/native';
 
 // Pantallas
@@ -150,7 +150,8 @@ function MainStack() {
   );
 }
 
-export default function Navigation() {
+function Navigation() {
+  const { user } = useAuth();
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -172,5 +173,13 @@ export default function Navigation() {
         />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <Navigation />
+    </AuthProvider>
   );
 }
