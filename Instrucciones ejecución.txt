@@ -1,0 +1,8 @@
+Requiere ingresar estos comando para correr la app:
+1.- npm install
+2.- npx expo go
+3.- Posteriormente presiona la tecla "a"
+4.- A continuación escanea el código QR
+
+Nota: Debe estar conectado bajo la misma red para que funcione
+PD: Al trabajar en react native nos dio muchas complicaciones la generación del apk, por tanto, especificamos el comando para hacer funcionar la app
